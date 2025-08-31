@@ -11,7 +11,7 @@ EMC2302 fanCtrl(0x4C, SDA_PIN, SCL_PIN);
 bool ledDemo = false;
 uint8_t ledStart[4], ledTarget[4];
 uint32_t ledStartTime;
-uint16_t ledDuration = 2000;
+uint16_t ledDuration = 5000;
 
 // Fan Demo Variables
 bool fanDemo = false;
@@ -59,12 +59,18 @@ uint8_t lerpWithEasing(uint8_t start, uint8_t target, float t, EasingType type)
 void setNextLEDDemoTarget()
 {
   ledStartTime = millis();
-  for (int i = 0; i < 4; i++)
-    ledStart[i] = ledDriver.readRegister(0x02 + i);
-  ledTarget[0] = random(0, 256);
-  ledTarget[1] = random(0, 256);
-  ledTarget[2] = random(0, 256);
-  ledTarget[3] = 0;
+
+  // Read current PWM values in logical order
+  ledStart[0] = ledDriver.getLEDPWM(0); // R
+  ledStart[1] = ledDriver.getLEDPWM(1); // G
+  ledStart[2] = ledDriver.getLEDPWM(2); // B
+  ledStart[3] = ledDriver.getLEDPWM(3); // W
+
+  // Pick random next target values
+  ledTarget[0] = random(0, 256); // R
+  ledTarget[1] = random(0, 256); // G
+  ledTarget[2] = random(0, 256); // B
+  ledTarget[3] = 0;              // W off by default
 }
 
 void setNextFanDemoTarget()
@@ -80,37 +86,75 @@ void setNextFanDemoTarget()
 
 void cmdLED(char *args)
 {
+  ledDemo = false; // stop demo
+
+  if (!args)
+    return;
+
   uint8_t r = 0, g = 0, b = 0, w = 0;
-  char *token;
-  while ((token = strtok(NULL, " ")) != NULL)
-  {
-    if (token[0] == 'R')
-      r = atoi(strtok(NULL, " "));
-    else if (token[0] == 'G')
-      g = atoi(strtok(NULL, " "));
-    else if (token[0] == 'B')
-      b = atoi(strtok(NULL, " "));
-    else if (token[0] == 'W')
-      w = atoi(strtok(NULL, " "));
-  }
+
+  // parse the four numbers in order
+  char *token = strtok(args, " ");
+  if (token)
+    r = constrain(atoi(token), 0, 255);
+  token = strtok(NULL, " ");
+  if (token)
+    g = constrain(atoi(token), 0, 255);
+  token = strtok(NULL, " ");
+  if (token)
+    b = constrain(atoi(token), 0, 255);
+  token = strtok(NULL, " ");
+  if (token)
+    w = constrain(atoi(token), 0, 255);
+
   ledDriver.setLEDs(r, g, b, w);
-  ledDemo = false; // exit LED demo
 }
 
 void cmdFAN(char *args)
 {
-  uint8_t fan = atoi(strtok(NULL, " "));
-  uint8_t duty = atoi(strtok(NULL, " "));
+  fanDemo = false; // stop fan demo
+  if (!args)
+    return;
+
+  uint8_t fan = 0;
+  uint8_t duty = 0;
+
+  char *token = strtok(args, " ");
+  while (token != NULL)
+  {
+    if (strcmp(token, "FAN") == 0)
+    {
+      token = strtok(NULL, " ");
+      if (token)
+        fan = atoi(token);
+    }
+    else if (strcmp(token, "DUTY") == 0)
+    {
+      token = strtok(NULL, " ");
+      if (token)
+        duty = atoi(token);
+    }
+    token = strtok(NULL, " ");
+  }
+
   fanCtrl.setFanDuty(fan, duty);
-  fanDemo = false; // exit fan demo
 }
 
 void cmdGET(char *args)
 {
-  char *token = strtok(NULL, " ");
+  if (!args)
+    return;
+
+  char *token = strtok(args, " "); // first token after command
+  if (!token)
+    return;
+
   if (strcmp(token, "FAN") == 0)
   {
-    uint8_t fan = atoi(strtok(NULL, " "));
+    token = strtok(NULL, " ");
+    if (!token)
+      return;
+    uint8_t fan = atoi(token);
     Serial.print("FAN ");
     Serial.print(fan);
     Serial.print(" RPM: ");
@@ -118,14 +162,15 @@ void cmdGET(char *args)
   }
   else if (strcmp(token, "LED") == 0)
   {
+    // Read LED PWM values in logical R,G,B,W order
     Serial.print("LED R: ");
-    Serial.print(ledDriver.readRegister(0x02));
+    Serial.print(ledDriver.getLEDPWM(0));
     Serial.print(" G: ");
-    Serial.print(ledDriver.readRegister(0x03));
+    Serial.print(ledDriver.getLEDPWM(1));
     Serial.print(" B: ");
-    Serial.print(ledDriver.readRegister(0x04));
+    Serial.print(ledDriver.getLEDPWM(2));
     Serial.print(" W: ");
-    Serial.println(ledDriver.readRegister(0x05));
+    Serial.println(ledDriver.getLEDPWM(3));
   }
 }
 
@@ -239,7 +284,7 @@ void setup()
   ledDriver.begin();
   fanCtrl.begin();
 
-  ledDriver.mapColors(0, 1, 2, 3);
+  ledDriver.mapColors(1, 2, 0, 3);
   ledDriver.setLEDs(0, 0, 0, 0);
 
   // Initialize demo variables
@@ -259,14 +304,17 @@ void loop()
   // LED demo
   if (ledDemo)
   {
-    float t = (float)(now - ledStartTime) / ledDuration;
+    float t = float(millis() - ledStartTime) / ledDuration;
     if (t > 1.0)
       t = 1.0;
+
     uint8_t r = lerpWithEasing(ledStart[0], ledTarget[0], t, ledEasing);
     uint8_t g = lerpWithEasing(ledStart[1], ledTarget[1], t, ledEasing);
     uint8_t b = lerpWithEasing(ledStart[2], ledTarget[2], t, ledEasing);
     uint8_t w = lerpWithEasing(ledStart[3], ledTarget[3], t, ledEasing);
+
     ledDriver.setLEDs(r, g, b, w);
+
     if (t >= 1.0)
       setNextLEDDemoTarget();
   }

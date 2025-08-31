@@ -7,9 +7,10 @@
 #define EMC2302_FAN2_TACH 0x40 // high byte, low byte at 0x41
 
 EMC2302::EMC2302(uint8_t addr, uint8_t sda, uint8_t scl) 
-: _addr(addr), _sw() {}
+: _addr(addr), _sw(sda, scl) {}
 
 void EMC2302::begin() {
+//   _sw.setDelay_us(10); // try 10us; increase if needed
   _sw.begin();
   _sw.setTimeout(500);
   // Put fans into manual PWM mode (default is usually auto)
