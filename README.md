@@ -49,7 +49,7 @@ Commands are **space-separated strings** terminated by newline (`\n`).
 
 | Command | Description |
 |---------|-------------|
-| `LED R <0-255> G <0-255> B <0-255> W <0-255>` | Set LED color manually |
+| `LED <0-255> <0-255> <0-255> <0-255>` | Set LED color manually, mandatory RGBW values in respective order |
 | `LEDD [EASING] [DURATION]` | Start LED demo; optional easing (`LINEAR`, `INOUT`, `IN`, `OUT`) and duration in ms |
 | `STOP` | Stop all demos |
 
@@ -180,3 +180,4 @@ void loop() {
 - RGBW mapping is configurable via `mapColors()`  
 - Default LED mapping: R→LED0, G→LED1, B→LED2, W→LED3  
 - Fans 0 and 1 correspond to EMC2302 PWM outputs  
+
