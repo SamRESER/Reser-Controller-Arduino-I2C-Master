@@ -1,11 +1,11 @@
 #include "PCA9632.h"
 #include "EMC2302.h"
 
-#define SDA_PIN 10
-#define SCL_PIN 11
+#define SDA_PIN 20
+#define SCL_PIN 21
 
 PCA9632 ledDriver(0x60, SDA_PIN, SCL_PIN);
-EMC2302 fanCtrl(0x2E, SDA_PIN, SCL_PIN);
+EMC2302 fanCtrl(0x4C, SDA_PIN, SCL_PIN);
 
 // LED Demo Variables
 bool ledDemo = false;

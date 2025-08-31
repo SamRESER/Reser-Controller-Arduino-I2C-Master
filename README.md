@@ -180,4 +180,3 @@ void loop() {
 - RGBW mapping is configurable via `mapColors()`  
 - Default LED mapping: R→LED0, G→LED1, B→LED2, W→LED3  
 - Fans 0 and 1 correspond to EMC2302 PWM outputs  
-

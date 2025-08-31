@@ -2,7 +2,7 @@
 #define EMC2302_H
 
 #include <Arduino.h>
-#include <SoftWire.h>
+#include <Wire.h>
 
 class EMC2302 {
   public:
@@ -15,7 +15,7 @@ class EMC2302 {
 
   private:
     uint8_t _addr;
-    SoftWire _sw;
+    TwoWire _sw;
 };
 
 #endif

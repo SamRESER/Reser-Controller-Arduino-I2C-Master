@@ -7,7 +7,7 @@
 #define EMC2302_FAN2_TACH 0x40 // high byte, low byte at 0x41
 
 EMC2302::EMC2302(uint8_t addr, uint8_t sda, uint8_t scl) 
-: _addr(addr), _sw(sda, scl) {}
+: _addr(addr), _sw() {}
 
 void EMC2302::begin() {
   _sw.begin();

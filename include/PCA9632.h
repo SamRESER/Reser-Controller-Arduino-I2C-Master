@@ -2,7 +2,7 @@
 #define PCA9632_H
 
 #include <Arduino.h>
-#include <SoftWire.h>
+#include <Wire.h>
 
 class PCA9632
 {
@@ -26,7 +26,7 @@ public:
 
 private:
     uint8_t _addr;
-    SoftWire _sw;
+    TwoWire _sw;
 
     uint8_t _ledMap[4];     // logical color -> physical channel
     uint8_t _currentPWM[4]; // store current PWM values
