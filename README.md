@@ -57,7 +57,7 @@ Commands are **space-separated strings** terminated by newline (`\n`).
 
 | Command | Description |
 |---------|-------------|
-| `FAN <0|1> <0-255>` | Set PWM duty for fan 0 or 1 |
+| `FAN <0\|1> <0-255>` | Set PWM duty for fan 0 or 1 |
 | `FAND [EASING] [DURATION]` | Start fan demo; optional easing and duration |
 | `STOP` | Stop all demos |
 
@@ -66,7 +66,7 @@ Commands are **space-separated strings** terminated by newline (`\n`).
 | Command | Description |
 |---------|-------------|
 | `GET LED` | Return current RGBW values |
-| `GET FAN <0|1>` | Return RPM of specified fan |
+| `GET FAN <0\|1>` | Return RPM of specified fan |
 
 ## Demo Mode Behavior
 
@@ -180,3 +180,4 @@ void loop() {
 - RGBW mapping is configurable via `mapColors()`  
 - Default LED mapping: R→LED0, G→LED1, B→LED2, W→LED3  
 - Fans 0 and 1 correspond to EMC2302 PWM outputs  
+
